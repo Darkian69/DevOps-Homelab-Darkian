@@ -1,0 +1,80 @@
+---
+- name: Bootstrapping y Hardening del Servidor (Configuracion Inicial)
+  hosts: celeron
+  become: yes
+  vars:
+    nuevo_usuario: "darkiandev"
+    mi_llave_publica: "{{ lookup('file', '/mnt/d/Usuarios/Darkian/Documentos/Homelab/Ansible/ansible-ssh.pub') }}"
+
+  tasks:
+    # 1. GESTIÓN DE USUARIOS
+    - name: Crear el usuario de administracion
+      user:
+        name: "{{ nuevo_usuario }}"
+        shell: /bin/bash
+        groups: sudo
+        append: yes
+        state: present
+
+    - name: Configurar llave SSH para el nuevo usuario
+      authorized_key:
+        user: "{{ nuevo_usuario }}"
+        state: present
+        key: "{{ mi_llave_publica }}"
+
+    # 2. SEGURIDAD SSH (HARDENING)
+    - name: Deshabilitar autenticacion por contraseña en SSH
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^#?PasswordAuthentication'
+        line: 'PasswordAuthentication no'
+      notify: Reiniciar SSH
+
+    - name: Deshabilitar login de Root por SSH
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^#?PermitRootLogin'
+        line: 'PermitRootLogin no'
+      notify: Reiniciar SSH
+
+    # 3. RED (IPv6 e IP Estatica)
+    - name: Desactivar IPv6 en el Kernel
+      sysctl:
+        name: "{{ item }}"
+        value: '1'
+        state: present
+        reload: yes
+      with_items:
+        - net.ipv6.conf.all.disable_ipv6
+        - net.ipv6.conf.default.disable_ipv6
+
+    - name: Configurar IP Estatica (Netplan)
+      copy:
+        dest: /etc/netplan/00-installer-config.yaml
+        content: |
+          network:
+            version: 2
+            ethernets:
+              eth0:
+                dhcp4: no
+                addresses: [192.168.1.50/24]
+                gateway4: 192.168.1.1
+                nameservers:
+                  addresses: [8.8.8.8, 1.1.1.1]
+      notify: Aplicar Netplan
+
+    # 4. FIREWALL (UFW)
+    - name: Configurar UFW - Permitir solo SSH
+      ufw:
+        rule: allow
+        name: OpenSSH
+        state: enabled
+
+  handlers:
+    - name: Reiniciar SSH
+      service:
+        name: ssh
+        state: restarted
+
+    - name: Aplicar Netplan
+      shell: netplan apply
