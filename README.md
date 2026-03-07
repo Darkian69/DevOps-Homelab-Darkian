@@ -21,6 +21,6 @@ El objetivo es transformar un hardware limitado (Celeron con 4GB RAM) en una inf
 * `/scripts`: Automatización en Bash y Python.
 
 ## 🛠️ Bitácora de Implementación
-1. [Configuración de Acceso Seguro (SSH)](docs/01-access-security.md)
+1. [Configuración de Acceso Seguro (SSH)](Docs/01-access-security.md)
 2. [Hardening de Linux y Firewall (UFW)](docs/02-hardening.md) - *Próximamente*
 3. [Instalación y Optimización de Docker](docs/03-docker-setup.md) - *Próximamente*
