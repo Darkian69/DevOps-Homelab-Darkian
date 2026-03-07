@@ -21,3 +21,12 @@ El primer Playbook de aprovisionamiento automatiza las tareas críticas realizad
 ```bash
 # Ejemplo de ejecución del Playbook de configuración
 ansible-playbook -i inventory.ini setup_server.yml
+```
+## Mi primer Playbook: Automatización del Sistema Base
+Se implementó un Playbook (`01_setup_system.yml`) para estandarizar el estado inicial del servidor. Este script automatiza:
+- La actualización de repositorios (`apt update`).
+- La instalación de dependencias esenciales de administración (htop, curl, git).
+- La garantía de persistencia de las reglas del Firewall para el servicio SSH.
+
+### Concepto clave: Idempotencia
+Una de las mayores ventajas de Ansible aplicadas en este paso es la **idempotencia**. Si ejecuto el Playbook múltiples veces, Ansible detecta qué tareas ya fueron realizadas y solo aplica los cambios necesarios, evitando inconsistencias en el servidor.
