@@ -1,0 +1,27 @@
+---
+- name: Configuracion inicial del Celeron
+  hosts: celeron
+  become: yes  # Esto le dice a Ansible que use 'sudo'
+
+  tasks:
+    - name: Actualizar el cache de apt
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+
+    - name: Actualizar todos los paquetes (apt upgrade)
+      apt:
+        upgrade: dist
+    - name: Instalar herramientas basicas de red
+      apt:
+        name:
+          - curl
+          - git
+          - ufw
+          - htop
+        state: present
+
+    - name: Verificar que el Firewall permite SSH
+      ufw:
+        rule: allow
+        name: OpenSSH
