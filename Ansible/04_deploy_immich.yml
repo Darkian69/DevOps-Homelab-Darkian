@@ -1,0 +1,38 @@
+---
+- name: Despliegue de Immich con ML
+  hosts: celeron
+  become: yes
+  vars:
+    base_path: "/home/{{ ansible_user }}/docker/immich"
+
+  tasks:
+    - name: 1. Crear directorios de datos para Immich
+      file:
+        path: "{{ base_path }}/data/{{ item }}"
+        state: directory
+        owner: "root"
+        group: "root"
+        mode: '0755'
+      with_items:
+        - "upload"
+        - "postgres"
+        - "model-cache"
+
+    - name: 2. Desplegar configuraciones (Compose y .env)
+      copy:
+        src: "{{ item.src }}"
+        dest: "{{ item.dest }}"
+      with_items:
+        - { src: "../servicios/immich/docker-compose.yml", dest: "{{ base_path }}/docker-compose.yml" }
+        - { src: "../servicios/immich/.env", dest: "{{ base_path }}/.env" }
+
+    - name: 3. Abrir puerto 2283 en UFW
+      community.general.ufw:
+        rule: allow
+        port: '2283'
+        proto: tcp
+
+    - name: 4. Levantar Stack de Immich
+      community.docker.docker_compose_v2:
+        project_src: "{{ base_path }}"
+        state: present

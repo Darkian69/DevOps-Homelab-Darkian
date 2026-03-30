@@ -1,0 +1,71 @@
+---
+- name: Despliegue de Nextcloud Performance Stack (FPM + Nginx + Redis)
+  hosts: celeron
+  become: yes
+  vars:
+    base_path: "/home/{{ ansible_user }}/docker/nextcloud"
+
+  tasks:
+    - name: 1. Crear directorios con permisos para Nextcloud (Alpine UID 82)
+      file:
+        path: "{{ item }}"
+        state: directory
+        owner: "82"
+        group: "82"
+        mode: '0755'
+
+      with_items:
+        - "{{ base_path }}"
+        - "{{ base_path }}/nginx"
+        - "{{ base_path }}/nextcloud_data"
+        - "{{ base_path }}/nextcloud_db"
+
+
+    - name: 2. Copiar configuracion de Nginx
+      copy:
+        src: ../servicios/nextcloud/nginx/nginx.conf
+        dest: "{{ base_path }}/nginx/nginx.conf"
+        mode: '0644'
+
+    - name: 3. Copiar archivo Docker Compose
+      copy:
+        src: ../servicios/nextcloud/docker-compose.yml
+        dest: "{{ base_path }}/docker-compose.yml"
+        mode: '0644'
+
+    - name: 4. Abrir puerto 8080 en el Firewall (UFW)
+      ufw:
+        rule: allow
+        port: '8080'
+        proto: tcp
+
+    - name: 5. Levantar el Stack de Nextcloud
+      community.docker.docker_compose_v2:
+        project_src: "{{ base_path }}"
+        state: present
+        wait: yes
+
+    - name: 6. Esperar a que Nextcloud se instale
+      pause:
+        seconds: 60
+
+
+    - name: 7. Configuración de Rendimiento y PDFs (Sin Redis)
+      command: "docker exec -u www-data nextcloud-app php occ {{ item }}"
+      with_items:
+        - "app:disable photos"        # Quitamos lo pesado
+        - "app:disable dashboard"     # Quitamos lo pesado
+        - "app:enable files_pdfviewer" # Aseguramos PDF
+        - "config:system:set front_controller_active --value=true --type=bool"
+        - "db:add-missing-indices"
+
+    - name: 8. Optimizacion automatica de Nextcloud
+      command: "docker exec -u www-data nextcloud-app php occ {{ item }}"
+      with_items:
+        - "db:add-missing-indices"
+        - "maintenance:repair --include-expensive"
+      register: repair_result
+      changed_when: "'Done' in repair_result.stdout"
+
+
+  
