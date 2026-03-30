@@ -23,4 +23,6 @@ El objetivo es transformar un hardware limitado (Celeron con 4GB RAM) en una inf
 ## 🛠️ Bitácora de Implementación
 1. [Configuración de Acceso Seguro (SSH)](Docs/01-access-security.md)
 2. [Hardening de Linux y Firewall (UFW)](Docs/02-hardening.md) 
-3. [Instalación y Optimización de Docker](Docs/03-docker-setup.md) 
+3. [Instalación y Optimización de Docker](Docs/03-docker-setup.md)
+4. [Implementación Ansible IaC](Docs/04-ansible-iac.md)
+5. [Despliegue servicios: Nextcloud-Immich](Docs/05-nextcloud-performance-stack.md)
