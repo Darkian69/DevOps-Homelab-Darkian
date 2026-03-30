@@ -1,0 +1,15 @@
+---
+- name: Instalacion de Tailscale mediante script oficial
+  hosts: celeron
+  become: yes
+
+  tasks:
+    - name: 1. Descargar e instalar Tailscale (Metodo Directo)
+      shell: "curl -fsSL https://tailscale.com/install.sh | sh"
+      register: tailscale_install
+      changed_when: "'is already installed' not in tailscale_install.stdout"
+
+    - name: 2. Iniciar Tailscale y solicitar enlace de autenticacion
+      shell: "tailscale up --authkey={{ tailscale_auth_key | default('') }}"
+      register: tailscale_up
+      changed_when: false

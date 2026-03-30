@@ -1,0 +1,26 @@
+---
+- name: Despliegue de Cloudflare Tunnel
+  hosts: celeron
+  become: yes
+  vars:
+    base_path: "/home/{{ ansible_user }}/docker/cloudflare"
+
+  tasks:
+    - name: 1. Crear directorio para Cloudflare
+      file:
+        path: "{{ base_path }}"
+        state: directory
+        mode: '0755'
+
+    - name: 2. Copiar configuracion del tunel
+      copy:
+        src: "{{ item.src }}"
+        dest: "{{ item.dest }}"
+      with_items:
+        - { src: "../servicios/cloudflare/docker-compose.yml", dest: "{{ base_path }}/docker-compose.yml" }
+        - { src: "../servicios/cloudflare/.env", dest: "{{ base_path }}/.env" }
+
+    - name: 3. Levantar contenedor del tunel
+      community.docker.docker_compose_v2:
+        project_src: "{{ base_path }}"
+        state: present
