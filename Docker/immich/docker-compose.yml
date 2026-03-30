@@ -1,0 +1,55 @@
+
+services:
+  immich-server:
+    container_name: immich_server
+    image: ghcr.io/immich-app/immich-server:release
+   
+    environment:
+      - IMMICH_HOST=0.0.0.0
+      #- IMMICH_PORT=3001 # Aseguramos el puerto interno
+    volumes:
+      - ./data/upload:/usr/src/app/upload
+    env_file:
+      - .env
+    ports:
+      - "2283:2283"
+    depends_on:
+      - redis
+      - database
+    restart: always
+
+  immich-machine-learning:
+    container_name: immich_ml
+    image: ghcr.io/immich-app/immich-machine-learning:release
+    volumes:
+      - ./data/model-cache:/usr/src/app/model-cache
+    env_file:
+      - .env
+    restart: always
+
+  redis:
+    container_name: immich_redis
+    image: redis:6.2-alpine
+    restart: always
+
+  database:
+    container_name: immich_database
+    # CAMBIO VITAL: Usar la imagen con soporte de vectores
+    image: ghcr.io/immich-app/postgres:14-vectorchord0.4.3-pgvectors0.2.0@sha256:bcf63357191b76a916ae5eb93464d65c07511da41e3bf7a8416db519b40b1c23
+    env_file:
+      - .env
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    volumes:
+      - ./data/postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: always
+
+volumes:
+  model-cache:
