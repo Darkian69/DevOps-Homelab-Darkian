@@ -1,4 +1,4 @@
-##Capa de Observabilidad y Gestion
+### Capa de Observabilidad y Gestion
 
 Para garantizar la estabilidad del servidor Intel Celeron, se han implementado herramientas de monitoreo en tiempo real y administracion visual de contenedores.
 
