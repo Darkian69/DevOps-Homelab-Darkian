@@ -11,7 +11,7 @@ El objetivo es transformar un hardware limitado (Celeron con 4GB RAM) en una inf
 * **Provisionamiento:** Ansible (IaC)
 * **Contenedores:** Docker & Docker Compose
 * **Red y VPN:** Tailscale & UFW
-* **Observabilidad:** Netdata 
+* **Observabilidad:** Netdata & Portainer
 * **CI/CD:** GitHub Actions (Self-hosted runner)
 
 ##  Estructura del Proyecto
@@ -27,3 +27,4 @@ El objetivo es transformar un hardware limitado (Celeron con 4GB RAM) en una inf
 4. [Implementación Ansible IaC](Docs/04-ansible-iac.md)
 5. [Despliegue servicios: Nextcloud-Immich](Docs/05-nextcloud-immich-setup.md)
 6. [Conectividad y Acceso Remoto](Docs/06-Tailscale-Cloudflare_tunnel-setup.md)
+7. [Observabilidad y Gestion](Docs/07-Netdata-Portainer-setup.md)
